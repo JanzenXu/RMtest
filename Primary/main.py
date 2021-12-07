@@ -1,6 +1,5 @@
 import cv2 as cv
 import numpy as np
-import os
 
 from function import colorRecog
 
@@ -15,4 +14,5 @@ cv.resizeWindow('res', (w-200, h-200))
 while video.isOpened():
     cap, frame = video.read()
     if cap:
-        frameRed=colorRecog(frame,'red')
+        frameRed = colorRecog(frame, 'red')
+
