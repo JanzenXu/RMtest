@@ -1,12 +1,11 @@
 import cv2 as cv
 import numpy as np
-from numpy.lib.function_base import angle
 
 
-def colorRecog(imgOri, color):
+def colorRecog(imgOri, color):  # 根据目标颜色进行二值化
     colorDict = {
-        'red': [np.array([0, 0, 240]), np.array([160, 160, 255])],
-        'blue': [np.array([0, 0, 240]), np.array([160, 160, 255])],
+        'red1': [np.array([0, 0, 240]), np.array([160, 160, 255])],
+        'blue1': [np.array([0, 0, 240]), np.array([160, 160, 255])],
         'red2': [np.array([0, 60, 60]), np.array([20, 255, 255])],
         'blue2': [np.array([0, 150, 70]), np.array([160, 255, 255])]
     }
@@ -29,7 +28,7 @@ def colorRecog(imgOri, color):
 
     imgOut = close.copy()
     imgOut[:, :400] = 0
-    if color == 'red' or color == 'blue':
+    if color == 'red1' or color == 'blue1':
         imgOut[950:, :] = 0
     else:
         imgOut[500:, :] = 0
@@ -37,7 +36,7 @@ def colorRecog(imgOri, color):
     return imgOut
 
 
-def objectiveDetect(binary, color):
+def objectiveDetect(binary, color):  # 检测目标矩形
     minCenterArea = [500, 300]
     maxCenterArea = [1500, 600]
     minCntArea = [5000, 750]
@@ -59,10 +58,12 @@ def objectiveDetect(binary, color):
         for i in range(len(cnts)):
             area = cv.contourArea(cnts[i])
             if area > minCenterArea[color]:
+                # 利用面积查找能量开关的中心
                 if area < maxCenterArea[color]:
                     x, y, w, h = cv.boundingRect(cnts[i])
                     center = (x+int(w/2), y+int(h/2))
 
+                # 筛选面积合适的轮廓
                 if minCntArea[color] < area < maxCntArea[color]:
                     rect = cv.minAreaRect(cnts[i])
                     rectCenter, rectShape, rectAngle = rect
@@ -78,9 +79,7 @@ def objectiveDetect(binary, color):
 
                     betterCnts.append(dic)
 
-        betterCnts = sorted(
-            betterCnts, key=lambda x: x['area'])
-
+        # 查找矩形
         for i in range(len(betterCnts)):
             rectW = betterCnts[i]['rectW']
             rectH = betterCnts[i]['rectH']
@@ -89,24 +88,28 @@ def objectiveDetect(binary, color):
 
             if minRectScale[color] < rectH/rectW < maxRectScale[color]:
                 if rectArea < maxRectArea[color]:
+                    # 对搜索到的矩形查找它的父轮廓
                     betterCnts[i]['upperCnt'] = cnts[rectIdx[3]]
                     rects.append(betterCnts[i])
 
         if rects != []:
             retval = True
+            # 取父轮廓面积最小的矩形为目标
             rects = sorted(rects, key=lambda x: cv.contourArea(x['upperCnt']))
             objectiveRect = rects[0]['coordinates']
 
     return retval, objectiveRect, center
 
 
-def rectShift(pts, center, angle=0):
+def rectShift(pts, center, angle=0):  # 根据提前量移动矩形框
     centerX, centerY = center
     rectOut = []
     for pt in pts:
+        # 转换坐标系
         x = np.float32(pt[0])-centerX
         y = np.float32(pt[1])-centerY
 
+        # 利用极坐标转换确定移动后矩形框坐标
         rho, theta = cv.cartToPolar(x, y, angleInDegrees=True)
         theta += angle
 
