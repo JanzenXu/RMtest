@@ -93,10 +93,11 @@ def objectiveDetect(binary, color):  # 检测目标矩形
                     rects.append(betterCnts[i])
 
         if rects != []:
-            retval = True
             # 取父轮廓面积最小的矩形为目标
             rects = sorted(rects, key=lambda x: cv.contourArea(x['upperCnt']))
-            objectiveRect = rects[0]['coordinates']
+            if cv.contourArea(rects[0]['upperCnt'])/cv.contourArea(rects[-1]['upperCnt']) < 0.7 or len(rects) == 1:
+                retval = True
+                objectiveRect = rects[0]['coordinates']
 
     return retval, objectiveRect, center
 
