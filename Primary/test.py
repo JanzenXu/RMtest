@@ -8,10 +8,10 @@ def nothing(x):
 
 def createTrackbar(color):
     if color == 'blue':
-        cv.createTrackbar('minH', 'Adjust', 40, 255, nothing)
-        cv.createTrackbar('maxH', 'Adjust', 75, 255, nothing)
-        cv.createTrackbar('minS', 'Adjust', 0, 255, nothing)
-        cv.createTrackbar('maxS', 'Adjust', 30, 255, nothing)
+        cv.createTrackbar('minH', 'Adjust', 70, 255, nothing)
+        cv.createTrackbar('maxH', 'Adjust', 100, 255, nothing)
+        cv.createTrackbar('minS', 'Adjust', 50, 255, nothing)
+        cv.createTrackbar('maxS', 'Adjust', 80, 255, nothing)
         cv.createTrackbar('minV', 'Adjust', 240, 255, nothing)
         cv.createTrackbar('maxV', 'Adjust', 255, 255, nothing)
 
@@ -97,7 +97,7 @@ def morphology(imgBinary):
     return imgOut
 
 
-img1 = cv.imread('RMimage/702.jpg', 1)
+img1 = cv.imread('RMimage/272.jpg', 1)
 h, w, d = img1.shape
 
 cv.namedWindow('Adjust', 0)

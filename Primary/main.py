@@ -21,12 +21,12 @@ while video.isOpened():
             for rect in rects:
                 rectX, rectY, rectW, rectH = rect
                 cv.rectangle(frame, (rectX, rectY),
-                             (rectX+rectW, rectY+rectH), (255, 155, 0), 3)
+                             (rectX+rectW, rectY+rectH), (0, 255, 255), 3)
 
-        cv.imshow('res', frameBinary)
+        cv.imshow('res', frame)
         print(retval)
 
-        if cv.waitKey(1) & 0xff == ord('q'):
+        if cv.waitKey(25) & 0xff == ord('q'):
             break
     else:
         break

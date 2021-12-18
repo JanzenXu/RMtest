@@ -5,23 +5,23 @@ import numpy as np
 def colorRecog(imgOri, color):  # 根据对方颜色进行二值化
     colorDict = {
         'red': [np.array([0, 100, 100]), np.array([55, 255, 255])],
-        'blue': [np.array([60, 25, 240]), np.array([100, 75, 255])]
+        'blue': [np.array([70, 50, 240]), np.array([100, 80, 255])]
     }
 
-    blur = cv.GaussianBlur(imgOri, (5, 5), 0)
+    blur = cv.GaussianBlur(imgOri, (1, 1), 0)
     hsv = cv.cvtColor(blur, cv.COLOR_BGR2HSV)
     range = cv.inRange(hsv, colorDict[color][0], colorDict[color][1])
 
     kernel = cv.getStructuringElement(cv.MORPH_RECT, (1, 1))
     erode = cv.erode(range, kernel)
 
-    kernel = cv.getStructuringElement(cv.MORPH_RECT, (7, 7))
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (10, 10))
     dilate = cv.dilate(erode, kernel)
 
-    kernel = cv.getStructuringElement(cv.MORPH_RECT, (1, 1))
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (10, 10))
     open = cv.morphologyEx(dilate, cv.MORPH_OPEN, kernel)
 
-    kernel = cv.getStructuringElement(cv.MORPH_RECT, (7, 7))
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (10, 10))
     close = cv.morphologyEx(open, cv.MORPH_CLOSE, kernel)
 
     imgOut = close
@@ -47,7 +47,7 @@ def objectiveDetect(imgBinary):  # 识别轮廓搜索装甲板并筛选
     if retval:
         retval = False  # 中途退出的返回值全为False
         for cnt in cnts:
-            if cv.contourArea(cnt) > 3396 or cv.contourArea(cnt) < 6:
+            if cv.contourArea(cnt) > 50000 or cv.contourArea(cnt) < 6:
                 continue
 
             dic = dict()
@@ -58,7 +58,7 @@ def objectiveDetect(imgBinary):  # 识别轮廓搜索装甲板并筛选
             rect = cv.minAreaRect(cnt)
             coordinates = np.int0(cv.boxPoints(rect))
 
-            dic['area'] = area
+            dic['rectArea'] = rect[1][0]*rect[1][1]
             dic['ellCenter'] = ellCenter
             dic['ellShape'] = ellShape
             dic['ellAngle'] = ellAngle
@@ -69,10 +69,10 @@ def objectiveDetect(imgBinary):  # 识别轮廓搜索装甲板并筛选
         for i in range(len(dataRaw)):
             height = dataRaw[i]['ellShape'][0]
             width = dataRaw[i]['ellShape'][1]
-            area = dataRaw[i]['area']
+            area = dataRaw[i]['rectArea']
             angle = dataRaw[i]['ellAngle']
 
-            if 4 >= height/width >= 0.2 and area > 18:
+            if 10 >= height/width >= 0.1 and area > 1000:
                 if angle < 30 or angle > 150:
                     dataCheck.append(dataRaw[i])
 
@@ -90,14 +90,14 @@ def objectiveDetect(imgBinary):  # 识别轮廓搜索装甲板并筛选
                 ellH2 = dataCheck[j]['ellShape'][0]
                 ellAngle1 = dataCheck[i]['ellAngle']
                 ellAngle2 = dataCheck[j]['ellAngle']
-                area1 = dataCheck[i]['area']
-                area2 = dataCheck[j]['area']
+                area1 = dataCheck[i]['rectArea']
+                area2 = dataCheck[j]['rectArea']
 
-                if abs(ellY1-ellY2) <= 2*(ellH1+ellH2):
+                if abs(ellY1-ellY2) <= (ellH1+ellH2):
                     if abs(ellH2-ellH1) <= max(ellH1, ellH2):
-                        if abs(ellX1-ellX2) <= 6.8*(ellH2+ellH1):
+                        if abs(ellX1-ellX2) <= 4*(ellH2+ellH1):
                             if abs(ellAngle2-ellAngle1) < 30:
-                                if abs(area2-area1) < 3*min(area1, area2):
+                                if abs(area2-area1) < min(area1, area2):
                                     dataMatch.append(
                                         (dataCheck[i], dataCheck[j]))
                 j += 1
