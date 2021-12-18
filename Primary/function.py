@@ -5,20 +5,26 @@ import numpy as np
 def colorRecog(imgOri, color):  # 根据对方颜色进行二值化
     colorDict = {
         'red': [np.array([0, 100, 100]), np.array([55, 255, 255])],
-        'blue': [np.array([0, 60, 60]), np.array([255, 255, 255])]
+        'blue': [np.array([60, 25, 240]), np.array([100, 75, 255])]
     }
 
-    blur = cv.GaussianBlur(imgOri, (9, 9), 0)
+    blur = cv.GaussianBlur(imgOri, (5, 5), 0)
     hsv = cv.cvtColor(blur, cv.COLOR_BGR2HSV)
     range = cv.inRange(hsv, colorDict[color][0], colorDict[color][1])
 
-    open = cv.morphologyEx(range, cv.MORPH_OPEN, (5, 5))
-    close = cv.morphologyEx(open, cv.MORPH_CLOSE, (5, 5))
-    erode = cv.erode(close, (1, 1))
-    dilate = cv.dilate(erode, (3, 3))
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (1, 1))
+    erode = cv.erode(range, kernel)
 
-    dilate[700:, :] = 0
-    imgOut = dilate
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (7, 7))
+    dilate = cv.dilate(erode, kernel)
+
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (1, 1))
+    open = cv.morphologyEx(dilate, cv.MORPH_OPEN, kernel)
+
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (7, 7))
+    close = cv.morphologyEx(open, cv.MORPH_CLOSE, kernel)
+
+    imgOut = close
 
     return imgOut
 
@@ -113,8 +119,8 @@ def objectiveDetect(imgBinary):  # 识别轮廓搜索装甲板并筛选
                         dataMatchPro[j] = 0
                     else:
                         dataMatchPro[i] = 0
-            while 0 in dataMatchPro:
-                dataMatchPro.remove(0)
+        while 0 in dataMatchPro:
+            dataMatchPro.remove(0)
 
         if dataMatchPro != []:
             retval = True

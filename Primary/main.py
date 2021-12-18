@@ -3,7 +3,7 @@ import numpy as np
 
 from function import colorRecog, objectiveDetect
 
-video = cv.VideoCapture('RMvideo/1.mp4')
+video = cv.VideoCapture('RMvideo/3.mp4')
 
 cap, frame = video.read()
 h, w, d = frame.shape
@@ -14,7 +14,7 @@ cv.resizeWindow('res', (w-200, h-200))
 while video.isOpened():
     cap, frame = video.read()
     if cap:
-        frameBinary = colorRecog(frame, 'red')
+        frameBinary = colorRecog(frame, 'blue')
         retval, rects = objectiveDetect(frameBinary)
 
         if retval:
@@ -23,7 +23,7 @@ while video.isOpened():
                 cv.rectangle(frame, (rectX, rectY),
                              (rectX+rectW, rectY+rectH), (255, 155, 0), 3)
 
-        cv.imshow('res', frame)
+        cv.imshow('res', frameBinary)
         print(retval)
 
         if cv.waitKey(1) & 0xff == ord('q'):
