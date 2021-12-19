@@ -3,7 +3,7 @@ import numpy as np
 from function import colorRecog, objectiveDetect
 
 
-img1 = cv.imread('RMimage/272.jpg', 1)
+img1 = cv.imread('RMimage/667.jpg', 1)
 img2 = colorRecog(img1, 'blue')
 
 retval, rects = objectiveDetect(img2)
@@ -15,6 +15,6 @@ if retval:
                      (rectX+rectW, rectY+rectH), (0, 255, 255), 3)
 
 
-cv, cv.imshow('res', img1)
+cv, cv.imshow('res', img2)
 cv.waitKey()
 cv.destroyAllWindows()

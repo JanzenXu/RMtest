@@ -60,21 +60,22 @@ def objectiveDetect(imgBinary):  # 识别轮廓搜索装甲板并筛选
 
             dic['rectArea'] = rect[1][0]*rect[1][1]
             dic['ellCenter'] = ellCenter
-            dic['ellShape'] = ellShape
+            dic['ellShape'] = sorted(ellShape)
             dic['ellAngle'] = ellAngle
             dic['coordinates'] = coordinates
             dataRaw.append(dic)
 
         # 筛选符合条件的轮廓
         for i in range(len(dataRaw)):
-            height = dataRaw[i]['ellShape'][0]
-            width = dataRaw[i]['ellShape'][1]
+            height = dataRaw[i]['ellShape'][1]
+            width = dataRaw[i]['ellShape'][0]
             area = dataRaw[i]['rectArea']
             angle = dataRaw[i]['ellAngle']
 
-            if 10 >= height/width >= 0.1 and area > 1000:
+            if 10 >= height/width and area > 1000:
                 if angle < 30 or angle > 150:
-                    dataCheck.append(dataRaw[i])
+                    if height < 120 and width < 60:
+                        dataCheck.append(dataRaw[i])
 
         # 对筛选出的轮廓按中心点高度排序
         dataCheck = sorted(
@@ -86,18 +87,18 @@ def objectiveDetect(imgBinary):  # 识别轮廓搜索装甲板并筛选
             while j < len(dataCheck):
                 ellX1, ellY1 = dataCheck[i]['ellCenter']
                 ellX2, ellY2 = dataCheck[j]['ellCenter']
-                ellH1 = dataCheck[i]['ellShape'][0]
-                ellH2 = dataCheck[j]['ellShape'][0]
+                ellH1 = dataCheck[i]['ellShape'][1]
+                ellH2 = dataCheck[j]['ellShape'][1]
                 ellAngle1 = dataCheck[i]['ellAngle']
                 ellAngle2 = dataCheck[j]['ellAngle']
                 area1 = dataCheck[i]['rectArea']
                 area2 = dataCheck[j]['rectArea']
 
-                if abs(ellY1-ellY2) <= (ellH1+ellH2):
+                if abs(ellY1-ellY2) <= max(ellH1, ellH2):
                     if abs(ellH2-ellH1) <= max(ellH1, ellH2):
-                        if abs(ellX1-ellX2) <= 4*(ellH2+ellH1):
+                        if min(ellH2, ellH1) <= abs(ellX1-ellX2) <= 2*(ellH2+ellH1):
                             if abs(ellAngle2-ellAngle1) < 30:
-                                if abs(area2-area1) < min(area1, area2):
+                                if abs(area2-area1) <= min(area1, area2):
                                     dataMatch.append(
                                         (dataCheck[i], dataCheck[j]))
                 j += 1
@@ -123,7 +124,6 @@ def objectiveDetect(imgBinary):  # 识别轮廓搜索装甲板并筛选
             dataMatchPro.remove(0)
 
         if dataMatchPro != []:
-            retval = True
             for i in range(len(dataMatchPro)):
                 coordinates1 = dataMatchPro[i][0]['coordinates']
                 coordinates2 = dataMatchPro[i][1]['coordinates']
@@ -138,6 +138,8 @@ def objectiveDetect(imgBinary):  # 识别轮廓搜索装甲板并筛选
                 # 找到外接矩形
                 rectX, rectY, rectW, rectH = cv.boundingRect(cntTemp[0])
 
-                rectOut.append((rectX, rectY, rectW, rectH))
+                if rectH*1.2 < rectW < rectH*2.5:
+                    retval = True
+                    rectOut.append((rectX, rectY, rectW, rectH))
 
     return retval, rectOut

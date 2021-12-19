@@ -26,7 +26,7 @@ while video.isOpened():
         cv.imshow('res', frame)
         print(retval)
 
-        if cv.waitKey(25) & 0xff == ord('q'):
+        if cv.waitKey(15) & 0xff == ord('q'):
             break
     else:
         break

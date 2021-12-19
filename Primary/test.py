@@ -97,7 +97,7 @@ def morphology(imgBinary):
     return imgOut
 
 
-img1 = cv.imread('RMimage/272.jpg', 1)
+img1 = cv.imread('RMimage/678.jpg', 1)
 h, w, d = img1.shape
 
 cv.namedWindow('Adjust', 0)
